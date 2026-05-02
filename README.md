@@ -8,6 +8,7 @@
 
 ### 🌐 [**LIVE DEMO → pollpilot-app-2026.web.app**](https://pollpilot-app-2026.web.app)
 ### 🐙 [**SOURCE CODE → github.com/Karthikprabhu07/PollPilot**](https://github.com/Karthikprabhu07/PollPilot)
+### 📦 [**FULL PROJECT ASSETS → Google Drive**](https://drive.google.com/drive/folders/1iZbUFaF0QKhBcuO2V2N8F1aFgg_AQ1K3?usp=sharing)
 
 ---
 
@@ -259,6 +260,21 @@ src/
 
 ---
 
+## 📦 Project Assets — Google Drive
+
+> GitHub repo is kept under 10 MB as per submission rules.
+> Full project assets including all source files are available on Google Drive.
+
+### 📥 [**Download Full Project Assets → Google Drive**](https://drive.google.com/drive/folders/1iZbUFaF0QKhBcuO2V2N8F1aFgg_AQ1K3?usp=sharing)
+
+| What's inside | Details |
+|---|---|
+| 📁 Complete source files | All project files including dependencies |
+| 🎨 Design assets | CSS, icons, and UI resources |
+| 📝 Build artifacts | Production-ready dist output |
+
+---
+
 ## 🔒 Privacy & Safety
 
 - 🏠 **Local-first** — all chat history lives in the browser, never on a server
@@ -298,6 +314,7 @@ PollPilot is an **educational tool**. For official election procedures, always r
 
 ### 🌐 [**LIVE DEMO → pollpilot-app-2026.web.app**](https://pollpilot-app-2026.web.app)
 ### 🐙 [**SOURCE CODE → github.com/Karthikprabhu07/PollPilot**](https://github.com/Karthikprabhu07/PollPilot)
+### 📦 [**FULL PROJECT ASSETS → Google Drive**](https://drive.google.com/drive/folders/1iZbUFaF0QKhBcuO2V2N8F1aFgg_AQ1K3?usp=sharing)
 
 ⭐ **If PollPilot helped you, star the repo!** ⭐
 

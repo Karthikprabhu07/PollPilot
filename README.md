@@ -77,7 +77,7 @@ PollPilot transforms complex civic systems into **simple, streaming conversation
 
 - 🧠 Explains processes in plain, accessible language
 - 🌐 **21 languages** in the picker — **16 with full native-script UI translations**, all 21 with AI responses in the user's language
-- 🗺️ Guides users through every election stage end-to-end
+- 🗺️ Interactive **5-step Election Roadmap** — guides users from Registration to Results
 - 🛡️ Strictly **non-partisan** and factual via engineered system prompts
 - ⚡ **Real-time streaming** responses powered by Groq's ultra-fast inference
 
@@ -97,6 +97,9 @@ PollPilot transforms complex civic systems into **simple, streaming conversation
 | 🗳️ **Quick Prompts** | Context-aware suggestion chips and 4-card starter grid |
 | ↺ **Error Recovery** | Per-message retry button with clean error state handling |
 | 🛡️ **Error Boundary** | App-level React error boundary with one-click reset |
+| 🗺️ **Interactive Election Roadmap** | Visual 5-step timeline on welcome screen — Registration → Learn Issues → Polling Place → Cast Vote → Track Results |
+| 🤖 **Auto AI Guidance** | Clicking any roadmap step instantly triggers a full streaming AI walkthrough for that step |
+| 📊 **Progress Tracker** | Sidebar tracks which of the 5 civic steps you've explored — persisted in `localStorage` |
 
 ---
 
@@ -111,11 +114,14 @@ main.jsx
         └── PollPilotApp  (election-assistant.jsx)
             └── PollPilotErrorBoundary
                 └── ElectionAssistant
-                    ├── Sidebar       (chat history, search, new chat, profile)
-                    ├── Header        (menu, title, language selector, auth)
-                    ├── ChatArea      (messages, welcome state, typing indicator)
-                    ├── InputArea     (textarea, mic, send, suggestion chips)
-                    └── LanguageSheet (full-screen language picker modal)
+                    ├── Sidebar           (chat history, search, new chat, profile)
+                    │   └── CivicProgress (5-step progress tracker with localStorage)
+                    ├── Header            (menu, title, language selector, auth)
+                    ├── ChatArea
+                    │   ├── ElectionRoadmap  (welcome screen — 5-step clickable timeline)
+                    │   └── Messages         (streaming chat bubbles)
+                    ├── InputArea         (textarea, mic, send, suggestion chips)
+                    └── LanguageSheet     (full-screen language picker modal)
 ```
 
 ### 🧠 Runtime AI Pipeline
@@ -146,6 +152,7 @@ Session auto-saved to localStorage on every message
 | Selected language | `localStorage` | `pollpilot_language` |
 | Theme preference | `localStorage` | `pollpilot_theme` |
 | Onboarding status | `localStorage` | `pollpilot_onboarding` |
+| Roadmap progress | `localStorage` | `pollpilot_progress` |
 
 > Chat history is scoped per **Clerk user ID** — users only ever see their own sessions. Guest history is stored under the key `'guest'`.
 

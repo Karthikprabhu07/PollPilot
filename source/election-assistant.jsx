@@ -324,6 +324,60 @@ function LanguageSheet({ language, setLanguage, onClose }) {
   );
 }
 
+const stepPrompts = {
+  1: "Guide me step by step through voter registration. What do I need and how do I check my status?",
+  2: "How do I research election candidates and understand the key issues before voting?",
+  3: "How do I find my nearest polling station and what are the voting timelines I should know?",
+  4: "Explain the complete process of casting my vote — both mail-in and in-person options.",
+  5: "How does vote counting and result tracking work after election day?"
+};
+
+const stepTitles = {
+  1: "Registration",
+  2: "Learn Issues",
+  3: "Polling Place",
+  4: "Cast Your Vote",
+  5: "Track Results"
+};
+
+const stepSubtitles = {
+  1: "Check your voter registration status",
+  2: "Understand candidates and their positions",
+  3: "Find your nearest polling station",
+  4: "Mail-in or in-person voting guide",
+  5: "Follow the vote counting process"
+};
+
+const stepEmojis = {
+  1: "📋",
+  2: "📰",
+  3: "📍",
+  4: "✅",
+  5: "📊"
+};
+
+function ElectionRoadmap({ activeStep, onStepClick }) {
+  return (
+    <div className="roadmap-container">
+      <div className="roadmap-title">Election Roadmap</div>
+      <div className="roadmap-steps">
+        {[1,2,3,4,5].map(n => (
+          <div 
+            key={n} 
+            className={`roadmap-step ${activeStep === n ? 'active' : ''}`}
+            onClick={() => onStepClick(n)}
+          >
+            <div className="step-badge">{n}</div>
+            <div className="step-icon">{stepEmojis[n]}</div>
+            <div className="step-title">{stepTitles[n]}</div>
+            <div className="step-subtitle">{stepSubtitles[n]}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 function ElectionAssistant() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -349,6 +403,10 @@ function ElectionAssistant() {
   const [theme, setTheme]                     = useState(() => localStorage.getItem("pollpilot_theme") || "light");
   const [copiedIndex, setCopiedIndex]         = useState(null);
   const [msgFeedback, setMsgFeedback]         = useState({});
+  const [activeStep, setActiveStep]           = useState(null);
+  const [completedSteps, setCompletedSteps]   = useState(() => {
+    try { return JSON.parse(localStorage.getItem('pollpilot_progress')) || []; } catch { return []; }
+  });
 
   const messagesEndRef  = useRef(null);
   const recognitionRef  = useRef(null);
@@ -396,6 +454,10 @@ function ElectionAssistant() {
   }, [historySessions]);
 
   useEffect(() => {
+    localStorage.setItem('pollpilot_progress', JSON.stringify(completedSteps));
+  }, [completedSteps]);
+
+  useEffect(() => {
     const lastIndex = messages.length - 1;
     const lastMsg = messages[lastIndex];
 
@@ -440,7 +502,7 @@ function ElectionAssistant() {
     }));
   };
 
-  const handleSend = async (text = input, isRetry = false) => {
+  const handleSend = async (text = input, isRetry = false, stepNumber = null) => {
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
 
@@ -498,6 +560,9 @@ function ElectionAssistant() {
         setHistorySessions(hist => hist.map(s => s.id === currentSessionId ? { ...s, messages: updated } : s));
         return updated;
       });
+      if (stepNumber && !completedSteps.includes(stepNumber)) {
+        setCompletedSteps(prev => [...prev, stepNumber]);
+      }
     } catch (err) {
       setIsLoading(false);
       setMessages(prev => {
@@ -616,8 +681,21 @@ function ElectionAssistant() {
           <div className="sb-action" onClick={handleNewChat}>
             <IconEdit /> <span>{t.newChat}</span>
           </div>
-
-
+          
+          <div className="civic-progress">
+            <p className="progress-label">ELECTION ROADMAP</p>
+            <div className="progress-steps">
+              {[1,2,3,4,5].map(n => (
+                <div 
+                  key={n}
+                  className={`progress-dot ${completedSteps.includes(n) ? 'done' : ''}`}
+                  title={stepTitles[n]}
+                  onClick={() => { setActiveStep(n); handleSend(stepPrompts[n], false, n); if (window.innerWidth <= 768) setSidebarOpen(false); }}
+                />
+              ))}
+            </div>
+            <p className="progress-text">{completedSteps.length}/5 steps explored</p>
+          </div>
         </div>
 
         <div className="sidebar-content">
@@ -779,6 +857,14 @@ function ElectionAssistant() {
                   ))}
                 </div>
               )}
+              
+              <ElectionRoadmap 
+                activeStep={activeStep} 
+                onStepClick={(n) => {
+                  setActiveStep(n);
+                  handleSend(stepPrompts[n], false, n);
+                }} 
+              />
             </div>
           ) : (
             messages.map((m, i) => {

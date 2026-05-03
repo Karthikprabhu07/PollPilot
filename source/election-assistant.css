@@ -178,8 +178,19 @@ small, .cm-sub, .hist-group, .msg-time, .input-footer { font-size: max(11px, 0.7
 
 .hdr-actions { display: flex; align-items: center; gap: 8px; }
 
+.roadmap-header-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 99px;
+  background: rgba(232, 135, 26, 0.1); color: var(--accent);
+  cursor: pointer; font-size: 13px; font-weight: 600;
+  border: 1px solid rgba(232, 135, 26, 0.2); outline: none; min-height: 36px; white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.roadmap-header-btn:hover { background: var(--accent); color: white; }
+.roadmap-header-btn svg { width: 16px; height: 16px; }
 
-
+.roadmap-inline { width: 100%; }
+.roadmap-inline .roadmap-container { padding: 12px 0 0 0; }
 /* FIX: Single language selector button only — country removed from header */
 .lang-selector-btn {
   display: flex; align-items: center; gap: 6px;
@@ -533,6 +544,7 @@ textarea::placeholder { color: var(--txt-muted); }
   .welcome-title { font-size: 24px; }
   .welcome-subtitle { margin-bottom: 24px; }
   .msg-actions { opacity: 1; }
+  .roadmap-header-btn-text { display: none; }
 }
 
 /* ─── Desktop ──────────────────────────────────────────────── */
@@ -704,17 +716,29 @@ textarea::placeholder { color: var(--txt-muted); }
   gap: 8px;
   margin-bottom: 6px;
 }
-.progress-dot {
-  width: 28px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--border-color);
+.progress-pill {
+  border-radius: 4px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.2s;
   flex: 1;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  color: var(--txt-muted);
 }
-.progress-dot.done {
+.progress-pill:hover {
+  background: var(--card-hover);
+  border-color: var(--accent);
+}
+.progress-pill.done {
   background: var(--accent);
+  color: white;
+  border-color: var(--accent);
 }
 .progress-text {
   font-size: 11px;

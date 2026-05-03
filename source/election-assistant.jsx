@@ -273,6 +273,7 @@ const IconCheck   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="
 const IconChevron = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>;
 const IconGlobe   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
 const IconLang    = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>;
+const IconMap     = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>;
 const IconEdit    = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>;
 const IconPinChat = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.5l-2.5-3v-6a4.5 4.5 0 0 0-9 0v6L5 15.5V17z"/></svg>;
 const IconThreeDots = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>;
@@ -534,7 +535,7 @@ function ElectionAssistant() {
       const rawHistory = newMessages;
       const cleanHistory = [];
       for (const m of rawHistory) {
-        if (m.isError) continue;
+        if (m.isError || m.isRoadmap) continue;
         const role = m.role === "user" ? "user" : "assistant";
         if (cleanHistory.length === 0 && role === "assistant") continue;
         if (cleanHistory.length > 0 && cleanHistory[cleanHistory.length - 1].role === role) {
@@ -686,12 +687,14 @@ function ElectionAssistant() {
             <p className="progress-label">ELECTION ROADMAP</p>
             <div className="progress-steps">
               {[1,2,3,4,5].map(n => (
-                <div 
+                <button 
                   key={n}
-                  className={`progress-dot ${completedSteps.includes(n) ? 'done' : ''}`}
-                  title={stepTitles[n]}
+                  className={`progress-pill ${completedSteps.includes(n) ? 'done' : ''}`}
+                  title={`Step ${n}: ${stepTitles[n]}`}
                   onClick={() => { setActiveStep(n); handleSend(stepPrompts[n], false, n); if (window.innerWidth <= 768) setSidebarOpen(false); }}
-                />
+                >
+                  {stepEmojis[n]} {n}
+                </button>
               ))}
             </div>
             <p className="progress-text">{completedSteps.length}/5 steps explored</p>
@@ -792,6 +795,19 @@ function ElectionAssistant() {
 
           <div className="hdr-actions">
 
+            {/* Map Roadmap Button */}
+            {hasMessages && (
+              <button 
+                className="roadmap-header-btn" 
+                onClick={() => {
+                  setMessages(prev => [...prev, { role: "assistant", isRoadmap: true }]);
+                }}
+              >
+                <IconMap />
+                <span className="roadmap-header-btn-text">Roadmap</span>
+              </button>
+            )}
+
             {/* FIX: single language selector only, no country in header */}
             <button className="lang-selector-btn" onClick={() => setShowLangSheet(true)}>
               <IconGlobe />
@@ -873,10 +889,21 @@ function ElectionAssistant() {
               <div key={i} ref={el => msgRefs.current[i] = el} className={`msg-wrap ${m.role !== 'user' ? 'msg-bot-wrap' : 'msg-user-wrap'}`}>
                 <div className={`msg-inner ${m.role !== 'user' ? 'msg-bot' : 'msg-user'}`}>
                   <div className={m.role !== 'user' ? 'bubble-bot' : 'bubble-user'}>
-                    {m.role !== 'user'
-                      ? (m.isStreaming ? <>{m.content}<span className="streaming-cursor">▍</span></> : renderMarkdown(m.content))
-                      : m.content
-                    }
+                    {m.isRoadmap ? (
+                      <div className="roadmap-inline">
+                        <ElectionRoadmap 
+                          activeStep={activeStep} 
+                          onStepClick={(n) => {
+                            setActiveStep(n);
+                            handleSend(stepPrompts[n], false, n);
+                          }} 
+                        />
+                      </div>
+                    ) : (
+                      m.role !== 'user'
+                        ? (m.isStreaming ? <>{m.content}<span className="streaming-cursor">▍</span></> : renderMarkdown(m.content))
+                        : m.content
+                    )}
                     {m.isError && (
                       <button
                         onClick={() => handleSend(m.lastQuery, true)}
@@ -886,7 +913,7 @@ function ElectionAssistant() {
                       </button>
                     )}
                   </div>
-                  {m.role !== 'user' && !m.isStreaming && !m.isError && (
+                  {m.role !== 'user' && !m.isStreaming && !m.isError && !m.isRoadmap && (
                     <div className="msg-actions">
                       <button className="msg-action-btn" onClick={() => handleCopy(m.content, i)} title="Copy">
                         {copiedIndex === i ? <IconCheck /> : <IconCopy />} Copy

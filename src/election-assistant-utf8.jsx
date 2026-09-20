@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect, Component } from "react";
+import React, { useState, useRef, useEffect, Component } from "react";
 import './election-assistant.css';
 import { useUser, SignInButton, SignOutButton, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 
@@ -190,15 +190,13 @@ const QUICK_PROMPTS = [
   { id: 3, arrow: "→" },
 ];
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-
 function buildSystemPrompt(langLabel) {
   return `You are PollPilot, a premium, nonpartisan global election education assistant. Respond entirely in ${langLabel}. Be concise, highly professional, and format responses with markdown. Do not hallucinate.`;
 }
 
-async function callGroqAPI(cleanHistory, language) {
+async function callChatAPI(cleanHistory, language) {
   const langLabel = LANGUAGES.find(l => l.code === language)?.label ?? "English";
-  const url = `https://api.groq.com/openai/v1/chat/completions`;
+  const url = `/api/chat`;
   
   const messages = [
     { role: "system", content: buildSystemPrompt(langLabel) },
@@ -208,8 +206,7 @@ async function callGroqAPI(cleanHistory, language) {
   const response = await fetch(url, {
     method: "POST",
     headers: { 
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${GROQ_API_KEY}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({
       model: "llama-3.1-8b-instant",
@@ -223,7 +220,9 @@ async function callGroqAPI(cleanHistory, language) {
     try {
       const errorData = await response.json();
       if (response.status === 429) {
-        errMessage = "Groq rate limit exceeded. Please wait a moment.";
+        errMessage = "Rate limit exceeded. Please wait a moment.";
+      } else if (typeof errorData?.error === "string") {
+        errMessage = errorData.error;
       } else if (errorData?.error?.message) {
         errMessage = errorData.error.message;
       }
@@ -446,7 +445,7 @@ function ElectionAssistant() {
           cleanHistory.push({ role, content: m.content });
         }
       }
-      const reply = await callGroqAPI(cleanHistory, language);
+      const reply = await callChatAPI(cleanHistory, language);
       setIsLoading(false);
       setMessages(prev => {
         const updated = [...prev, { role: "assistant", content: reply }];

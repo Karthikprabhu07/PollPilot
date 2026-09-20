@@ -199,11 +199,10 @@ npm install
 Create a `.env` file in the project root:
 
 ```env
-VITE_GROQ_API_KEY=your_groq_api_key_here
 VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
 ```
 
-> ⚠️ Both keys are **required**. The app throws on startup if `VITE_CLERK_PUBLISHABLE_KEY` is missing.
+> ⚠️ Only `VITE_CLERK_PUBLISHABLE_KEY` is a frontend client variable. `GROQ_API_KEY` is securely stored as a server-side environment variable (in Vercel Project Settings or Cloud Secret Manager) and accessed via the serverless backend proxy (`/api/chat`). The API key is never bundled or exposed to the frontend client.
 
 ### 4. Run the Development Server
 
@@ -283,11 +282,8 @@ src/
 ---
 
 ## 🔒 Privacy & Safety
-
-- 🏠 **Local-first** — all chat history lives in the browser, never on a server
-- 🚫 **No tracking** — no analytics, no personal data collection
-- 🛡️ **Non-partisan guardrails** — system prompt explicitly prevents political bias
-- 🔐 **Auth-scoped history** — sessions are keyed to Clerk user ID; guest data is isolated
+ 
+No analytics. Chat history is stored locally in your browser. Messages are sent to our AI provider (Groq) to generate responses, and sign-in is handled by Clerk.
 
 ---
 

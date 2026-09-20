@@ -164,15 +164,13 @@ const QUICK_PROMPTS = [
   { id: 3, arrow: "→" },
 ];
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-
 function buildSystemPrompt(langLabel) {
   return `You are PollPilot, a premium, nonpartisan global election education assistant. Respond entirely in ${langLabel}. Be concise, highly professional, and format responses with markdown. Do not hallucinate.`;
 }
 
-async function callGroqAPI(cleanHistory, language, onChunk) {
+async function callChatAPI(cleanHistory, language, onChunk) {
   const langLabel = LANGUAGES.find(l => l.code === language)?.label ?? "English";
-  const url = `https://api.groq.com/openai/v1/chat/completions`;
+  const url = `/api/chat`;
   
   const messages = [
     { role: "system", content: buildSystemPrompt(langLabel) },
@@ -182,8 +180,7 @@ async function callGroqAPI(cleanHistory, language, onChunk) {
   const response = await fetch(url, {
     method: "POST",
     headers: { 
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${GROQ_API_KEY}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({
       model: "llama-3.1-8b-instant",
@@ -198,7 +195,9 @@ async function callGroqAPI(cleanHistory, language, onChunk) {
     try {
       const errorData = await response.json();
       if (response.status === 429) {
-        errMessage = "Groq rate limit exceeded. Please wait a moment.";
+        errMessage = "Rate limit exceeded. Please wait a moment.";
+      } else if (typeof errorData?.error === "string") {
+        errMessage = errorData.error;
       } else if (errorData?.error?.message) {
         errMessage = errorData.error.message;
       }
@@ -547,7 +546,7 @@ function ElectionAssistant() {
       setIsLoading(false);
       setMessages(prev => [...prev, { role: "assistant", content: "", isStreaming: true }]);
 
-      await callGroqAPI(cleanHistory, language, (text) => {
+      await callChatAPI(cleanHistory, language, (text) => {
         setMessages(prev => {
           const updated = [...prev];
           updated[updated.length - 1] = { ...updated[updated.length - 1], content: text, isStreaming: true };

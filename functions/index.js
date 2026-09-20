@@ -5,9 +5,18 @@ const { Readable } = require("node:stream");
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 
 const ALLOWED_MODELS = new Set([
+  "openai/gpt-oss-20b",
+  "openai/gpt-oss-120b",
+  "qwen/qwen3.8-27b",
+  "groq/compound-mini",
   "llama-3.1-8b-instant",
   "llama-3.3-70b-versatile"
 ]);
+
+const MODEL_MAPPING = {
+  "llama-3.1-8b-instant": "openai/gpt-oss-20b",
+  "llama-3.3-70b-versatile": "openai/gpt-oss-120b"
+};
 
 const MAX_MESSAGES = 30;
 const MAX_TOKENS_CAP = 1500;
@@ -73,9 +82,10 @@ exports.chat = onRequest(
         sanitizedMessages.push(cleanMsg);
       }
 
-      // Build sanitized payload - never forward unknown top-level fields
+      // Build sanitized payload - map to active upstream model if legacy requested
+      const targetModel = MODEL_MAPPING[model] || model;
       const payload = {
-        model,
+        model: targetModel,
         messages: sanitizedMessages,
         stream: typeof stream === "boolean" ? stream : true
       };

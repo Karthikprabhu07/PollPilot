@@ -183,7 +183,7 @@ async function callChatAPI(cleanHistory, language, onChunk) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
+      model: "openai/gpt-oss-20b",
       messages: messages,
       temperature: 0.2,
       stream: true

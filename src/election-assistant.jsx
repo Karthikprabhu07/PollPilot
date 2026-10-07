@@ -233,29 +233,148 @@ async function callChatAPI(cleanHistory, language, onChunk) {
 }
 
 function renderMarkdown(text) {
-  const inlineRegex = /(\*\*.*?\*\*|\*.*?\*|\[.*?\]\(.*?\))/g;
-  function processInline(str) {
+  // ── Inline parser: handles <br>, **bold**, *italic*, `code`, [links](url) ──
+  function processInline(str, keyPrefix) {
+    if (!str) return [];
+    const inlineRegex = /(<br\s*\/?>|&lt;br\s*\/?&gt;|\*\*.*?\*\*|\*.*?\*|`[^`]+`|\[.*?\]\(.*?\))/gi;
     const parts = []; let cursor = 0, match;
-    inlineRegex.lastIndex = 0;
     while ((match = inlineRegex.exec(str)) !== null) {
       if (match.index > cursor) parts.push(str.substring(cursor, match.index));
       const m = match[0];
-      if (m.startsWith("**")) parts.push(<strong key={match.index}>{m.slice(2,-2)}</strong>);
-      else if (m.startsWith("*")) parts.push(<em key={match.index}>{m.slice(1,-1)}</em>);
-      else {
+      const lower = m.toLowerCase();
+      if (lower.startsWith("<br") || lower.startsWith("&lt;br")) {
+        parts.push(<br key={`${keyPrefix}-br-${match.index}`} />);
+      } else if (m.startsWith("**") && m.endsWith("**") && m.length >= 4) {
+        parts.push(<strong key={`${keyPrefix}-b-${match.index}`}>{m.slice(2,-2)}</strong>);
+      } else if (m.startsWith("*") && m.endsWith("*") && m.length >= 2) {
+        parts.push(<em key={`${keyPrefix}-i-${match.index}`}>{m.slice(1,-1)}</em>);
+      } else if (m.startsWith("`") && m.endsWith("`") && m.length >= 2) {
+        parts.push(<code key={`${keyPrefix}-c-${match.index}`} className="md-inline-code">{m.slice(1,-1)}</code>);
+      } else if (m.startsWith("[")) {
         const lbl = m.match(/\[(.*?)\]/)?.[1], url = m.match(/\((.*?)\)/)?.[1];
-        parts.push(lbl && url ? <a key={match.index} href={url} target="_blank" rel="noopener noreferrer">{lbl}</a> : <span key={match.index}>{m}</span>);
+        parts.push(lbl && url
+          ? <a key={`${keyPrefix}-a-${match.index}`} href={url} target="_blank" rel="noopener noreferrer">{lbl}</a>
+          : <span key={`${keyPrefix}-s-${match.index}`}>{m}</span>);
+      } else {
+        parts.push(m);
       }
       cursor = inlineRegex.lastIndex;
     }
     if (cursor < str.length) parts.push(str.substring(cursor));
-    return parts.length ? parts : str;
+    return parts.length ? parts : [str];
   }
-  return text.split("\n").map((line, i) => {
-    if (!line.trim()) return <div key={i} style={{height:'8px'}} />;
-    if (line.trim().startsWith("- ")) return <li key={i}>{processInline(line.trim().slice(2))}</li>;
-    return <p key={i}>{processInline(line)}</p>;
-  });
+
+  // ── Table helpers ──
+  function parseTableCells(row) {
+    let s = row.trim();
+    if (s.startsWith("|")) s = s.slice(1);
+    if (s.endsWith("|")) s = s.slice(0, -1);
+    return s.split("|").map(c => c.trim());
+  }
+  function isTableRow(line) {
+    const t = line.trim();
+    return t.startsWith("|") && t.indexOf("|", 1) > 0;
+  }
+  function isTableSeparator(line) {
+    if (!isTableRow(line)) return false;
+    return parseTableCells(line).every(c => /^:?-+:?$/.test(c.trim()));
+  }
+
+  // ── Block-level parser ──
+  if (!text) return null;
+  const lines = text.replace(/\r\n/g, "\n").split("\n");
+  const elements = [];
+  let i = 0;
+  let blockKey = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    const bk = blockKey++;
+
+    // Empty line → spacer
+    if (!trimmed) { elements.push(<div key={bk} style={{height:'8px'}} />); i++; continue; }
+
+    // Fenced code block
+    if (trimmed.startsWith("```")) {
+      const lang = trimmed.slice(3).trim();
+      const codeLines = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith("```")) { codeLines.push(lines[i]); i++; }
+      if (i < lines.length) i++;
+      elements.push(
+        <pre key={bk} className="md-code-block">
+          {lang && <div className="md-code-lang">{lang}</div>}
+          <code>{codeLines.join("\n")}</code>
+        </pre>
+      );
+      continue;
+    }
+
+    // Table
+    if (isTableRow(trimmed) && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
+      const headers = parseTableCells(trimmed);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && isTableRow(lines[i])) { rows.push(parseTableCells(lines[i])); i++; }
+      elements.push(
+        <div key={bk} className="md-table-wrap">
+          <table className="md-table">
+            <thead>
+              <tr>{headers.map((h, hi) => <th key={hi}>{processInline(h, `th-${bk}-${hi}`)}</th>)}</tr>
+            </thead>
+            <tbody>
+              {rows.map((row, ri) => (
+                <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{processInline(cell, `td-${bk}-${ri}-${ci}`)}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+
+    // Headings
+    if (trimmed.startsWith("### ")) { elements.push(<h4 key={bk} className="md-h3">{processInline(trimmed.slice(4), `h3-${bk}`)}</h4>); i++; continue; }
+    if (trimmed.startsWith("## "))  { elements.push(<h3 key={bk} className="md-h2">{processInline(trimmed.slice(3), `h2-${bk}`)}</h3>); i++; continue; }
+    if (trimmed.startsWith("# "))   { elements.push(<h2 key={bk} className="md-h1">{processInline(trimmed.slice(2), `h1-${bk}`)}</h2>); i++; continue; }
+
+    // Blockquote
+    if (trimmed.startsWith("> ")) {
+      const quoteLines = [trimmed.slice(2)];
+      i++;
+      while (i < lines.length && lines[i].trim().startsWith("> ")) { quoteLines.push(lines[i].trim().slice(2)); i++; }
+      elements.push(<blockquote key={bk} className="md-blockquote">{quoteLines.map((ql, qi) => <p key={qi}>{processInline(ql, `bq-${bk}-${qi}`)}</p>)}</blockquote>);
+      continue;
+    }
+
+    // Unordered list
+    if (/^[-*•]\s+/.test(trimmed)) {
+      const items = [trimmed.replace(/^[-*•]\s+/, "")];
+      i++;
+      while (i < lines.length && /^[-*•]\s+/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^[-*•]\s+/, "")); i++; }
+      elements.push(<ul key={bk} className="md-ul">{items.map((item, ii) => <li key={ii}>{processInline(item, `ul-${bk}-${ii}`)}</li>)}</ul>);
+      continue;
+    }
+
+    // Ordered list
+    if (/^\d+\.\s+/.test(trimmed)) {
+      const items = [trimmed.replace(/^\d+\.\s+/, "")];
+      i++;
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^\d+\.\s+/, "")); i++; }
+      elements.push(<ol key={bk} className="md-ol">{items.map((item, ii) => <li key={ii}>{processInline(item, `ol-${bk}-${ii}`)}</li>)}</ol>);
+      continue;
+    }
+
+    // Horizontal rule
+    if (/^(---|\*\*\*|___)$/.test(trimmed)) { elements.push(<hr key={bk} className="md-hr" />); i++; continue; }
+
+    // Paragraph (default)
+    elements.push(<p key={bk}>{processInline(line, `p-${bk}`)}</p>);
+    i++;
+  }
+
+  return elements;
 }
 
 // ─── Icons ─────────────────────────────────────────────────────────────────

@@ -378,6 +378,66 @@ small, .cm-sub, .hist-group, .msg-time, .input-footer { font-size: max(11px, 0.7
 .bubble-bot p:last-child { margin-bottom: 0; }
 .bubble-bot li { margin-left: 16px; margin-bottom: 4px; }
 
+/* ─── Markdown Rendered Elements ──────────────────────────── */
+.md-table-wrap {
+  width: 100%; overflow-x: auto; margin: 8px 0;
+  -webkit-overflow-scrolling: touch;
+}
+.md-table {
+  width: 100%; border-collapse: collapse; font-size: 14px;
+  border: 1px solid var(--border-color); border-radius: 8px;
+  overflow: hidden;
+}
+.md-table th {
+  background: rgba(27, 45, 79, 0.06); text-align: left;
+  padding: 10px 14px; font-weight: 600; font-size: 13px;
+  color: var(--primary); border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+.md-table td {
+  padding: 10px 14px; border-bottom: 1px solid var(--border-color);
+  vertical-align: top; line-height: 1.5;
+}
+.md-table tbody tr:last-child td { border-bottom: none; }
+.md-table tbody tr:nth-child(even) { background: rgba(0,0,0,0.015); }
+.md-table tbody tr:hover { background: var(--card-hover); }
+
+.md-code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 14px 16px; margin: 8px 0; overflow-x: auto;
+  font-family: 'Fira Code', 'Consolas', monospace; font-size: 13px;
+  line-height: 1.5; position: relative;
+}
+.md-code-lang {
+  position: absolute; top: 6px; right: 10px;
+  font-size: 10px; color: #7f849c; text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.md-inline-code {
+  background: rgba(27, 45, 79, 0.08); color: var(--primary);
+  padding: 2px 6px; border-radius: 4px; font-size: 0.9em;
+  font-family: 'Fira Code', 'Consolas', monospace;
+}
+.md-blockquote {
+  border-left: 3px solid var(--accent); margin: 8px 0;
+  padding: 8px 14px; background: rgba(232, 135, 26, 0.04);
+  border-radius: 0 8px 8px 0; color: var(--txt-main);
+}
+.md-blockquote p { margin-bottom: 4px; }
+.md-h1 { font-size: 1.4em; font-weight: 700; margin: 12px 0 6px; color: var(--primary); }
+.md-h2 { font-size: 1.2em; font-weight: 600; margin: 10px 0 6px; color: var(--primary); }
+.md-h3 { font-size: 1.05em; font-weight: 600; margin: 8px 0 4px; color: var(--txt-main); }
+.md-ul, .md-ol { margin: 6px 0; padding-left: 20px; }
+.md-ul li, .md-ol li { margin-bottom: 4px; line-height: 1.5; }
+.md-hr { border: none; border-top: 1px solid var(--border-color); margin: 12px 0; }
+
+/* Dark mode overrides for markdown */
+:root.dark .md-table th { background: rgba(255, 255, 255, 0.06); color: var(--accent); }
+:root.dark .md-table tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+:root.dark .md-inline-code { background: rgba(255, 255, 255, 0.08); color: var(--accent); }
+:root.dark .md-blockquote { background: rgba(232, 135, 26, 0.06); }
+
+
 .msg-time { font-size: 11px; color: var(--txt-muted); margin-top: 4px; display: none; }
 .msg-wrap:active .msg-time { display: block; }
 

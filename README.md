@@ -4,8 +4,9 @@
 
 > Know your rights. Understand your choices. Participate with confidence.
 
-<!-- Replace these with your real links/badges -->
-[Live demo](#) · [Report a bug](../../issues) · [Request a feature](../../issues)
+🔗 **Live demo:** [poll-pilot-two.vercel.app](https://poll-pilot-two.vercel.app/)
+
+[Live demo](https://poll-pilot-two.vercel.app/) · [Report a bug](../../issues) · [Request a feature](../../issues)
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-build-646CFF?logo=vite&logoColor=white)
@@ -180,7 +181,7 @@ npm run preview
 3. Add environment variables in **Project Settings → Environment Variables**:
    `VITE_CLERK_PUBLISHABLE_KEY`, `GROQ_API_KEY`, `GROQ_MODEL`.
 4. Deploy.
-5. Verify the live site: sign in, send a chat message, and confirm the Groq key does not appear in the browser's network tab or bundle.
+5. Verify the live site (currently at [poll-pilot-two.vercel.app](https://poll-pilot-two.vercel.app/)): sign in, send a chat message, and confirm the Groq key does not appear in the browser's network tab or bundle.
 
 ### Recommended API route pattern
 

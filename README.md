@@ -29,6 +29,7 @@
 - [Responsible AI & limitations](#-responsible-ai--limitations)
 - [Project status & roadmap](#-project-status--roadmap)
 - [Contributing](#-contributing)
+- [Author](#-author)
 - [License](#-license)
 
 ---
@@ -271,6 +272,15 @@ Contributions are welcome, especially help with translations, accessibility, and
 3. Open a pull request describing what changed and why
 
 Please keep contributions nonpartisan: no content that advocates for or against any candidate, party, or campaign.
+
+---
+
+## 👤 Author
+
+**Karthik Prabhu**
+B.E. Computer Science & Engineering student at the Mangalore Institute of Technology & Engineering (MITE), Moodabidri. Passionate about UI/UX design, web development, and emerging AI & web technologies.
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Karthik%20Prabhu-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/karthik-prabhu-aba603330)
 
 ---
 
